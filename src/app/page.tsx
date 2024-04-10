@@ -4,7 +4,7 @@ import Image from "next/image";
 import { library } from "../books.json";
 import { SetStateAction, useMemo, useState } from "react";
 
-type Book = {
+export interface Book {
   title: string;
   pages: number;
   genre: string;
@@ -13,14 +13,15 @@ type Book = {
   year: number;
   ISBN: string;
   author: { name: string; otherBooks: string[] };
-};
+}
 
 type BooksSowProps = {
   book: Book;
 };
 
 export default function Home() {
-  const [selectedGenre, setSelectedGenre] = useState("");
+  // Estados
+  const [genre, setGenre] = useState("");
   const [selectedPages, setSelectedPages] = useState("");
   const [lista, setLista] = useState<Book[]>([]);
   const [titleBook, setTitleBook] = useState("");
@@ -41,7 +42,7 @@ export default function Home() {
     }
   }
 
-  // Componente para mostrar un libro en la lista de lectura
+  // Mostrar libros por género
   const BooksShow = ({ book }: BooksSowProps) => {
     return (
       <li
@@ -82,40 +83,39 @@ export default function Home() {
   // Filtrar por género
   const matches: { book: Book }[] = useMemo(() => {
     return library.filter(({ book }) => {
-      if (!selectedGenre || selectedGenre === "Todos") {
+      if (!genre || genre === "Todos") {
         return true;
       }
-      return book.genre === selectedGenre;
+      return book.genre === genre;
     });
-  }, [library, selectedGenre]);
+  }, [library, genre]);
 
   const handleGenreSelection = (e: {
     target: { value: SetStateAction<string> };
   }) => {
-    setSelectedGenre(e.target.value);
+    setGenre(e.target.value);
   };
 
-  const handleDeleteSelection = (e: any) => {
-    setSelectedGenre("Todos");
+  const handleGenreDeletion = (e: any) => {
+    setGenre("Todos");
   };
-
-  // Filtrar por número de páginas
 
   // Filtrar por nombre del libro
   const books = useMemo(
     () =>
       matches.filter((item) =>
-        item.book.title.toLowerCase().includes(titleBook)
+        item.book.title.toLowerCase().includes(titleBook) ||
+          item.book.author.name.toLowerCase().includes(titleBook)
       ),
     [matches, titleBook]
   );
 
   return (
-    <div>
+    <>
       <nav className="mb-2">
         <input
           type="text"
-          className="pl-2 py-2"
+          className="py-2 pl-2"
           value={titleBook}
           onChange={(e) => setTitleBook(e.target.value)}
           placeholder="Buscar libro..."
@@ -134,20 +134,21 @@ export default function Home() {
         <div className="flex gap-2">
           <label>Filtrar por género</label>
           <GenerosUnicos onGenreChange={handleGenreSelection} />
-          <button onClick={handleDeleteSelection}>Resetear Selección</button>
+          <button onClick={handleGenreDeletion}>Resetear Selección</button>
         </div>
       </div>
 
-      <div className="border p-5 mb-5">
+      <div className="p-5 mb-5 border">
         <h3>Lista de lectura</h3>
-        <span>({ lista.length }) libros en la lista</span>
-        <ul className="flex gap-5 flex-wrap items-center mt-2">
+        <span>({lista.length}) libros en la lista</span>
+        <ul className="flex flex-wrap items-center gap-5 mt-2">
           {lista.map((book) => (
             <li
               className="cursor-pointer"
               onClick={() => handleRemoveList(book)}
             >
               <Image
+                className="aspect-[9/14] object-cover"
                 src={book.cover}
                 alt={book.title}
                 width={200}
@@ -159,12 +160,12 @@ export default function Home() {
       </div>
 
       <h3>Libros disponibles</h3>
-      <span>({ books.length }) libros disponibles</span>
+      <span>({books.length}) libros disponibles</span>
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] mt-2">
         {books.map(({ book }) => (
           <BooksShow key={book.ISBN} book={book} />
         ))}
       </ul>
-    </div>
+    </>
   );
 }
