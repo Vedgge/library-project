@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { library } from "../books.json";
+import library from "../books.json";
 import { SetStateAction, useMemo, useState } from "react";
 
 export interface Book {
@@ -22,9 +22,31 @@ type BooksSowProps = {
 export default function Home() {
   // Estados
   const [genre, setGenre] = useState("");
-  const [selectedPages, setSelectedPages] = useState("");
   const [lista, setLista] = useState<Book[]>([]);
   const [titleBook, setTitleBook] = useState("");
+
+  // Filtrar por género
+  const matches: { book: Book }[] = useMemo(() => {
+    return Object.values(library.library)
+      .map((item) => ({ book: item.book }))
+      .filter(({ book }) => {
+        if (!genre || genre === "Todos") {
+          return true;
+        }
+        return book.genre === genre;
+      });
+  }, [genre]);
+
+  // Filtrar por nombre del libro
+  const books = useMemo(
+    () =>
+      matches.filter(
+        (item) =>
+          item.book.title.toLowerCase().includes(titleBook) ||
+          item.book.author.name.toLowerCase().includes(titleBook)
+      ),
+    [matches, titleBook]
+  );
 
   // Añadir a la lista de lectura
   function handleAddList(book: Book) {
@@ -68,7 +90,9 @@ export default function Home() {
   }: {
     onGenreChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   }) => {
-    const todosGeneros = library.map((libro) => libro.book.genre);
+    const todosGeneros = Object.values(library.library).map(
+      (item) => item.book.genre
+    );
     const generosUnicos = Array.from(new Set(todosGeneros));
 
     return (
@@ -80,16 +104,6 @@ export default function Home() {
     );
   };
 
-  // Filtrar por género
-  const matches: { book: Book }[] = useMemo(() => {
-    return library.filter(({ book }) => {
-      if (!genre || genre === "Todos") {
-        return true;
-      }
-      return book.genre === genre;
-    });
-  }, [library, genre]);
-
   const handleGenreSelection = (e: {
     target: { value: SetStateAction<string> };
   }) => {
@@ -99,16 +113,6 @@ export default function Home() {
   const handleGenreDeletion = (e: any) => {
     setGenre("Todos");
   };
-
-  // Filtrar por nombre del libro
-  const books = useMemo(
-    () =>
-      matches.filter((item) =>
-        item.book.title.toLowerCase().includes(titleBook) ||
-          item.book.author.name.toLowerCase().includes(titleBook)
-      ),
-    [matches, titleBook]
-  );
 
   return (
     <>
@@ -144,6 +148,7 @@ export default function Home() {
         <ul className="flex flex-wrap items-center gap-5 mt-2">
           {lista.map((book) => (
             <li
+              key={book.ISBN}
               className="cursor-pointer"
               onClick={() => handleRemoveList(book)}
             >
