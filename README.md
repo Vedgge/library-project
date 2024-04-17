@@ -20,7 +20,8 @@ This is my version of the challenge provided by [midudev](https://github.com/mid
 - TypeScript
 - Tailwind CSS
 
-## [Live Project](https://library-project-challenge.vercel.app/)
+## Live Project
+You can visualize and interact with the live project by clicking this [link](https://library-project-challenge.vercel.app/)
 
 ## Local Usage
 
