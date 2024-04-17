@@ -1,6 +1,5 @@
 
 # My Reading List App
-
 This is my version of the challenge provided by [midudev](https://github.com/midudev/pruebas-tecnicas/tree/main/pruebas/01-reading-list). It was developed using React, Next.js, TypeScript, and Tailwind CSS. 
 
 ## Features
